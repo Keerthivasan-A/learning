@@ -1,0 +1,11 @@
+/.idea/.gitignore
+/.idea/inspectionProfiles/profiles_settings.xml
+/.idea/learning.iml
+/.idea/misc.xml
+/.idea/modules.xml
+/.idea/vcs.xml
+*.xml
+*.iml
+*.twbx
+*.twb
+/.ipynb_checkpoints
