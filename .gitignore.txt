@@ -1,5 +1,0 @@
-*.xml
-*.iml
-*.twbr
-*.twbx
-/.ipynb_checkpoints/*.ipynb
