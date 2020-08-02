@@ -26,14 +26,12 @@ data = [go.Scatter(x=df['X'],
                    mode='markers')]
 
 layout = go.Layout(title=dict(text='Current Erruption Followed By Next Eruption',
-                              x=0.5),
-                   xaxis=dict(title='Current Erruption Duration (Mins)'),
-                   yaxis=dict(title='Next Eruption Watiting Time (Mins)')
+                             x=0.5),
+                  xaxis = dict(title='Current Erruption Duration (Mins)'),
+                  yaxis = dict(title='Next Eruption Watiting Time (Mins)')
                    )
 
 fig = go.Figure(data, layout)
-fig.show()
-fig.show()
 
 # Create a Dash layout that contains a Graph component:
 app.layout = html.Div(
