@@ -87,7 +87,9 @@ def global_trend(data):
                                  range=[0, world_level['Seats Held in National Parliment'].max() + 2],
                                  linewidth=2,
                                  linecolor='black'),
-                      title=dict(x=0.5)
+                      title=dict(x=0.5),
+                      paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)'
                       )
 
     fig.update_layout(
@@ -98,18 +100,18 @@ def global_trend(data):
     return fig
 
 
-def global_trend_by_cols(data):
+def global_trend_by_cols(data, cols):
     """
 
     :param data:
     :return:
     """
-    df = data.groupby(['Year', 'IncomeGroup'], as_index=False).agg({'Seats Held in National Parliment': 'mean'})
+    df = data.groupby(['Year', cols], as_index=False).agg({'Seats Held in National Parliment': 'mean'})
 
     fig = px.line(df[~df['Seats Held in National Parliment'].isnull()],
                   x='Year',
                   y='Seats Held in National Parliment',
-                  color='IncomeGroup',
+                  color=cols,
                   template='simple_white')
 
     fig.update_layout(xaxis=dict(title='Year',
@@ -119,7 +121,9 @@ def global_trend_by_cols(data):
                                  range=[0, df['Seats Held in National Parliment'].max() + 2],
                                  linewidth=2,
                                  linecolor='black'),
-                      title=dict(x=0.5)
+                      title=dict(x=0.5),
+                      paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)'
                       )
 
     fig.update_layout(
@@ -142,8 +146,40 @@ def global_map(data):
                         locations="Country Code",
                         color="Seats Held in National Parliment",  # lifeExp is a column of gapminder
                         hover_name="Country Name",  # column to add to hover information
-                        color_continuous_scale='OrRd',
-                        template='plotly_white')
+                        color_continuous_scale='Blues',
+                        template='plotly_white',)
+    fig.update_layout(coloraxis_showscale=False,
+                      paper_bgcolor='rgba(0,0,0,0)',
+                      plot_bgcolor='rgba(0,0,0,0)')
+    return fig
+
+
+def propotion_trend(data):
+    """
+    :param data:
+    :return:
+    """
+    df = data.groupby(['Year'], as_index=False).agg({'Female propotion': 'mean',
+                                                     'Male propotion': 'mean'})
+
+    fem_prop_chart = go.Scatter(x=df['Year'],
+                                y=df['Female propotion'],
+                                mode='lines+markers',
+                                name='Female propotion')
+
+    male_prop_chart = go.Scatter(x=df['Year'],
+                                 y=df['Male propotion'],
+                                 mode='lines+markers',
+                                 name='male propotion')
+
+    layout = go.Layout(title=dict(text='Male/Female Population Propotion'),
+                       xaxis=dict(title='Year'),
+                       yaxis=dict(title='Propotion'),
+                       paper_bgcolor='rgba(0,0,0,0)',
+                       plot_bgcolor='rgba(0,0,0,0)')
+
+    fig = go.Figure([fem_prop_chart, male_prop_chart], layout)
+
     return fig
 
 
@@ -153,23 +189,50 @@ if __name__ == "__main__":
     df_f_prop = pd.read_excel('.\data\API_SP.POP.TOTL.FE.ZS_DS2_en_csv_v2_1219499.xlsx')
     df_m_prop = pd.read_excel('.\data\API_SP.POP.TOTL.MA.ZS_DS2_en_csv_v2_1222903.xlsx')
     df_meta_countries = pd.read_excel('./data/Metadata_Country.xlsx')
-    df = data_wrangling(df_f_par_prop, df_f_prop, df_m_prop, df_meta_countries)
+    df_input = data_wrangling(df_f_par_prop, df_f_prop, df_m_prop, df_meta_countries)
+    df_input['Year'] = pd.to_datetime(df_input['Year']).dt.year
 
     # Dash app
-    app = dash.Dash(external_stylesheets=[dbc.themes.BOOTSTRAP])
+    app = dash.Dash(external_stylesheets=[dbc.themes.DARKLY])
 
-    # dbc.Col(html.H1("Women Empowerment In Parliament"),
-    #         width=3,
-    #         style={'text-align': 'center'},
-
+    # App Layout
     app.layout = html.Div(
-        [dbc.Row(
-            [dbc.Col(html.H1("Women Empowerment In Parliament"),
-                     style={'text-align':'center'}
-                     ),
-             ]
-        )
-        ]
+        [
+            dbc.Row(
+                [dbc.Col(html.H2("Women Empowerment In Parliament"),
+                         style={'text-align': 'center'}
+                         )
+                 ]
+            ),
+            # dbc.Row(
+            #     [dbc.Col(dcc.RangeSlider(id='Year Range',
+            #                              min=df_input['Year'].min(),
+            #                              max=df_input['Year'].max(),
+            #                              step=1,
+            #                              value=[df_input['Year'].min(), df_input['Year'].max()],
+            #                              marks={x: x for x in range(df_input['Year'].min(), df_input['Year'].max())}),
+            #              align="right"
+            #              ),
+            #      ]
+            # ),
+            dbc.Row(
+                [dbc.Col(dcc.Graph(figure=global_map(df_input)),
+                         align="center"
+                         ),
+                 ]
+            ),
+            dbc.Row(
+                [dbc.Col(dcc.Graph(figure=global_trend(df_input)),
+                         width=6
+                         ),
+                 dbc.Col(dcc.Graph(figure=propotion_trend(df_input)),
+                         width=6
+                         )
+                 ]
+            )
+        ],
+        style={'background': '#D1D6DE',
+               'textco': '#786C55'}
     )
 
     app.run_server()
